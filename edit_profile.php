@@ -13,6 +13,7 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name = sanitize($_POST['full_name']);
     $email = sanitize($_POST['email']);
+    $phone_number = sanitize($_POST['phone_number']);
     $password = $_POST['password'];
     $password_confirm = $_POST['password_confirm'];
 
@@ -29,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $updated = updateUserProfile($pdo, $user_id, $full_name, $email, $password);
+        $updated = updateUserProfile($pdo, $user_id, $full_name, $email, $phone_number, $password);
         if ($updated) {
             // Refresh session full name
             $_SESSION['full_name'] = $full_name;
@@ -76,6 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <label>Email</label>
                     <input type="email" name="email" class="form-control" value="<?php echo htmlspecialchars(isset($user['email']) ? $user['email'] : ''); ?>">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" name="phone_number" class="form-control" value="<?php echo htmlspecialchars(isset($user['phone_number']) ? $user['phone_number'] : ''); ?>" placeholder="e.g. +255 123 456 789">
                 </div>
 
                 <div class="form-group">

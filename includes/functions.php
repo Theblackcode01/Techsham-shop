@@ -80,6 +80,10 @@ function getDashboardStats($pdo) {
     $stmt = $pdo->query("SELECT COUNT(*) as total FROM products 
                          WHERE quantity_in_stock < 10 AND status = 'active'");
     $stats['low_stock'] = $stmt->fetch()['total'];
+
+    // Total stock quantity remaining
+    $stmt = $pdo->query("SELECT COALESCE(SUM(quantity_in_stock), 0) as total_stock FROM products WHERE status = 'active'");
+    $stats['total_stock'] = $stmt->fetch()['total_stock'];
     
     return $stats;
 }
@@ -212,16 +216,99 @@ function getUserById($pdo, $id) {
 }
 
 /**
- * Update user profile (name, email, optional password)
+ * Get all users
  */
-function updateUserProfile($pdo, $id, $full_name, $email, $new_password = null) {
+function getAllUsers($pdo) {
+    $stmt = $pdo->query("SELECT id, username, full_name, email, role, created_at, last_login FROM users ORDER BY created_at DESC");
+    return $stmt->fetchAll();
+}
+
+/**
+ * Create a new user
+ */
+function createUser($pdo, $username, $full_name, $email, $password, $role, $phone_number = null) {
+    $hashed = password_hash($password, PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("INSERT INTO users (username, password, full_name, email, phone_number, role) VALUES (?, ?, ?, ?, ?, ?)");
+    return $stmt->execute([$username, $hashed, $full_name, $email, $phone_number, $role]);
+}
+
+/**
+ * Update user account details
+ */
+function updateUserAccount($pdo, $id, $username, $full_name, $email, $role, $password = null, $phone_number = null) {
+    if ($password && strlen($password) > 0) {
+        $hashed = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("UPDATE users SET username = ?, full_name = ?, email = ?, phone_number = ?, role = ?, password = ? WHERE id = ?");
+        return $stmt->execute([$username, $full_name, $email, $phone_number, $role, $hashed, $id]);
+    }
+    $stmt = $pdo->prepare("UPDATE users SET username = ?, full_name = ?, email = ?, phone_number = ?, role = ? WHERE id = ?");
+    return $stmt->execute([$username, $full_name, $email, $phone_number, $role, $id]);
+}
+
+/**
+ * Delete user by ID
+ */
+function deleteUserById($pdo, $id) {
+    $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+    return $stmt->execute([$id]);
+}
+
+/**
+ * Update user profile (name, email, phone, optional password)
+ */
+function updateUserProfile($pdo, $id, $full_name, $email, $phone_number, $new_password = null) {
     if ($new_password && strlen($new_password) > 0) {
         $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, password = ? WHERE id = ?");
-        return $stmt->execute([$full_name, $email, $hashed, $id]);
+        $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, phone_number = ?, password = ? WHERE id = ?");
+        return $stmt->execute([$full_name, $email, $phone_number, $hashed, $id]);
     } else {
-        $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ? WHERE id = ?");
-        return $stmt->execute([$full_name, $email, $id]);
+        $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, phone_number = ? WHERE id = ?");
+        return $stmt->execute([$full_name, $email, $phone_number, $id]);
+    }
+}
+
+/**
+ * Get user by username or email
+ */
+function getUserByUsernameOrEmail($pdo, $username, $email) {
+    if (!empty($username) && !empty($email)) {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
+        $stmt->execute([$username, $email]);
+    } elseif (!empty($email)) {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+    } elseif (!empty($username)) {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+    } else {
+        return false;
+    }
+    return $stmt->fetch();
+}
+
+/**
+ * Update user password by user ID
+ */
+function updateUserPasswordById($pdo, $id, $new_password) {
+    $hashed = password_hash($new_password, PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+    return $stmt->execute([$hashed, $id]);
+}
+
+/**
+ * Check if current user is admin
+ */
+function isAdmin() {
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+}
+
+/**
+ * Require admin access
+ */
+function requireAdmin() {
+    if (!isAdmin()) {
+        header('Location: index.php');
+        exit();
     }
 }
 ?>

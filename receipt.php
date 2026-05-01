@@ -26,6 +26,9 @@ if (!$sale) {
     exit();
 }
 
+// Get sale user details (the person who created this sale)
+$saleUser = getUserById($pdo, $sale['user_id']);
+
 // Get sale items
 $stmt = $pdo->prepare("SELECT * FROM sale_items WHERE sale_id = ?");
 $stmt->execute([$sale_id]);
@@ -206,7 +209,12 @@ $items = $stmt->fetchAll();
             <h1>📱 Phone Shop</h1>
             <div class="company-info">
                 Sales Receipt<br>
-                Tel: +255 XXX XXX XXX | Email: sales@phoneshop.co.tz
+                <?php if ($saleUser): ?>
+                    Sales Rep: <strong><?php echo htmlspecialchars($saleUser['full_name']); ?></strong><br>
+                    Tel: <?php echo htmlspecialchars($saleUser['phone_number'] ?? 'N/A'); ?> | Email: <?php echo htmlspecialchars($saleUser['email'] ?? 'N/A'); ?>
+                <?php else: ?>
+                    Tel: +255 XXX XXX XXX | Email: sales@phoneshop.co.tz
+                <?php endif; ?>
             </div>
         </div>
         

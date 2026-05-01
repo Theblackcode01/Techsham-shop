@@ -21,32 +21,34 @@
         </div>
         
         <div class="nav-item">
-            <a href="sales.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'sales.php' ? 'active' : ''; ?>">
-                Sales
-            </a>
-        </div>
-        
-        <div class="nav-item">
             <a href="new_sale.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'new_sale.php' ? 'active' : ''; ?>">
                 New Sale
             </a>
         </div>
-        
-        <div class="nav-item">
-            <a href="reports.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : ''; ?>">
-                Reports
-            </a>
-        </div>
+
+        <?php if (isAdmin()): ?>
+            <div class="nav-item">
+                <a href="sales.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'sales.php' ? 'active' : ''; ?>">
+                    Sales
+                </a>
+            </div>
+            
+            <div class="nav-item">
+                <a href="reports.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'reports.php' ? 'active' : ''; ?>">
+                    Reports
+                </a>
+            </div>
+            
+            <div class="nav-item">
+                <a href="manage_users.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'manage_users.php' ? 'active' : ''; ?>">
+                    Manage Users
+                </a>
+            </div>
+        <?php endif; ?>
         
         <div class="nav-item">
             <a href="edit_profile.php" class="<?php echo basename($_SERVER['PHP_SELF']) == 'edit_profile.php' ? 'active' : ''; ?>">
                 Edit Profile
-            </a>
-        </div>
-
-        <div class="nav-item">
-            <a href="logout.php">
-                Logout
             </a>
         </div>
     </nav>
@@ -56,10 +58,11 @@
             <div class="user-avatar">
                 <?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?>
             </div>
-            <div>
-                <div style="font-weight: 600;"><?php echo $_SESSION['full_name']; ?></div>
-                <div style="font-size: 0.75rem; opacity: 0.8;"><?php echo ucfirst($_SESSION['role']); ?></div>
+            <div class="user-details">
+                <div class="user-name"><?php echo $_SESSION['full_name']; ?></div>
+                <div class="user-role"><?php echo ucfirst($_SESSION['role']); ?></div>
             </div>
         </div>
+        <a href="logout.php" class="logout-button">Logout</a>
     </div>
 </div>

@@ -8,6 +8,7 @@ require_once 'includes/config.php';
 require_once 'includes/functions.php';
 
 requireLogin();
+requireAdmin();
 
 // Date filtering
 $start_date = isset($_GET['start_date']) ? sanitize($_GET['start_date']) : date('Y-m-d');

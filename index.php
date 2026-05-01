@@ -13,6 +13,7 @@ requireLogin();
 $stats = getDashboardStats($pdo);
 $recentSales = getRecentSales($pdo, 5);
 $chartData = getSalesChartData($pdo);
+$lowStockProducts = getLowStockProducts($pdo);
 
 $pageTitle = 'Dashboard';
 ?>
@@ -57,16 +58,16 @@ $pageTitle = 'Dashboard';
                     <div class="stat-value"><?php echo number_format($stats['total_products']); ?></div>
                 </div>
                 
+                <div class="stat-card info">
+                    <div class="stat-icon">🧾</div>
+                    <div class="stat-label">Total Stock Available</div>
+                    <div class="stat-value"><?php echo number_format($stats['total_stock']); ?></div>
+                </div>
+                
                 <div class="stat-card success">
                     <div class="stat-icon">💰</div>
                     <div class="stat-label">Today's Revenue</div>
                     <div class="stat-value"><?php echo formatCurrency($stats['today_revenue']); ?></div>
-                </div>
-                
-                <div class="stat-card success">
-                    <div class="stat-icon">📈</div>
-                    <div class="stat-label">Today's Profit</div>
-                    <div class="stat-value"><?php echo formatCurrency($stats['today_profit']); ?></div>
                 </div>
                 
                 <div class="stat-card <?php echo $stats['low_stock'] > 0 ? 'warning' : ''; ?>">
@@ -84,11 +85,44 @@ $pageTitle = 'Dashboard';
                 <canvas id="salesChart" height="80"></canvas>
             </div>
             
+            <!-- Low Stock Products -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Low Stock Products</h2>
+                </div>
+                <?php if (count($lowStockProducts) > 0): ?>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>Quantity Left</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($lowStockProducts as $item): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($item['product_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($item['category']); ?></td>
+                                        <td><strong><?php echo $item['quantity_in_stock']; ?></strong></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p class="text-muted text-center">No low stock items at the moment.</p>
+                <?php endif; ?>
+            </div>
+            
             <!-- Recent Sales -->
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Recent Sales</h2>
-                    <a href="sales.php" class="btn btn-primary btn-sm">View All</a>
+                    <?php if (isAdmin()): ?>
+                        <a href="sales.php" class="btn btn-primary btn-sm">View All</a>
+                    <?php endif; ?>
                 </div>
                 
                 <?php if (count($recentSales) > 0): ?>

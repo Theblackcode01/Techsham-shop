@@ -8,6 +8,7 @@ require_once 'includes/config.php';
 require_once 'includes/functions.php';
 
 requireLogin();
+requireAdmin();
 
 // Get report type
 $report_type = isset($_GET['type']) ? sanitize($_GET['type']) : 'daily';
